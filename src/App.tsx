@@ -2,16 +2,31 @@ import { useEffect, useState } from 'react';
 import styles from './App.module.scss';
 
 function App() {
-	const [alarmDate, setAlarmDate] = useState(new Date());
+	const [currentDate, setCurrentDate] = useState(new Date());
 	const [timerValue, setTimerValue] = useState(0);
+	const [alarmDate, setAlarmDate] = useState(new Date());
+	const [selectedSound, setSelectedSound] = useState(
+		new Audio('./sounds/Ringtone.mp3')
+	);
+	const [testSound, setTestSound] = useState(false);
 	const [countdownStarted, setCountdownStarted] = useState(false);
-	const [countdown, setCountdown] = useState(0);
+	const [countdownValue, setCountdownValue] = useState(0);
+	const [alarmSound, setAlarmSound] = useState(
+		new Audio('./sounds/Ringtone.mp3')
+	);
+	const [playAlarmSound, setPlayAlarmSound] = useState(false);
 
-	const setTimerFromHour = (value: string) => {
-		///
-	};
+	useEffect(() => {
+		const timer = setInterval(() => {
+			setCurrentDate(new Date());
+		}, 100);
 
-	const handleTimerChange = (value: number) => {
+		return () => {
+			clearInterval(timer);
+		};
+	}, []);
+
+	const handleChangeTimerByMinutes = (value: number) => {
 		if (!(timerValue + value < 0)) {
 			setTimerValue((prevState) => prevState + value);
 			const newAlarmDate = alarmDate;
@@ -20,137 +35,220 @@ function App() {
 		}
 	};
 
-	const resetAlarmValues = () => {
+	const handleChangeTimerByInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const value = Number(e.target.value);
+		setTimerValue(value);
+		const newAlarmDate = alarmDate;
+		newAlarmDate.setMinutes(alarmDate.getMinutes() + value);
+		setAlarmDate(newAlarmDate);
+	};
+
+	const handleResetValues = () => {
 		setTimerValue(0);
-		setAlarmDate(new Date());
+		setAlarmDate(new Date(currentDate));
 	};
 
-	const handleHourChange = (e: any) => {
-		const value = e.target.value;
-		const currentDate = new Date();
+	const handleHourChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		const value = Number(e.target.value);
 		if (value <= currentDate.getHours()) {
-			const newAlarmDate = currentDate;
+			const newAlarmDate = structuredClone(currentDate);
 			newAlarmDate.setDate(currentDate.getDate() + 1);
 			newAlarmDate.setHours(value);
-			// setSelectFieldHourValue(value);
 			setAlarmDate(newAlarmDate);
+			const newTimerValue = newAlarmDate.getTime() - currentDate.getTime();
+			setTimerValue(newTimerValue / 1000 / 60);
 		} else {
-			const newAlarmDate = currentDate;
+			const newAlarmDate = structuredClone(currentDate);
 			newAlarmDate.setHours(value);
-			// setSelectFieldHourValue(value);
 			setAlarmDate(newAlarmDate);
+			const newTimerValue = newAlarmDate.getTime() - currentDate.getTime();
+			setTimerValue(newTimerValue / 1000 / 60);
 		}
 	};
 
-	const handleMinuteChange = (e: any) => {
-		const value = e.target.value;
-		const currentDate = new Date();
+	const handleMinuteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		const value = Number(e.target.value);
 		if (value <= currentDate.getMinutes()) {
-			const newAlarmDate = currentDate;
+			const newAlarmDate = structuredClone(currentDate);
 			newAlarmDate.setDate(currentDate.getDate() + 1);
 			newAlarmDate.setMinutes(value);
-			// setSelectFieldMinuteValue(value);
 			setAlarmDate(newAlarmDate);
+			const newTimerValue = newAlarmDate.getTime() - currentDate.getTime();
+			setTimerValue(newTimerValue / 1000 / 60);
 		} else {
-			const newAlarmDate = currentDate;
+			const newAlarmDate = structuredClone(currentDate);
 			newAlarmDate.setMinutes(value);
-			// setSelectFieldMinuteValue(value);
 			setAlarmDate(newAlarmDate);
+			const newTimerValue = newAlarmDate.getTime() - currentDate.getTime();
+			setTimerValue(newTimerValue / 1000 / 60);
 		}
 	};
 
-	const startCountdown = () => {
-		setCountdown(timerValue * 60 * 1000);
+	const handleSoundChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		setSelectedSound(new Audio(`./sounds/${e.target.value}.mp3`));
+	};
+
+	const handleTestSound = () => {
+		selectedSound.currentTime = 0;
+		setTestSound((prevState) => !prevState);
+	};
+
+	useEffect(() => {
+		if (testSound) {
+			selectedSound.play();
+		} else {
+			selectedSound.currentTime = 0;
+			selectedSound.pause();
+		}
+	}, [testSound, selectedSound]);
+
+	useEffect(() => {
+		selectedSound.addEventListener('ended', () => setTestSound(false));
+
+		return () => {
+			selectedSound.removeEventListener('ended', () => setTestSound(false));
+		};
+	}, [selectedSound]);
+
+	const handleStartCountdown = () => {
+		setCountdownValue(timerValue * 60 * 25);
+		// setCountdownValue(timerValue * 60 * 1000);
+		const newAlarmDate = structuredClone(currentDate);
+		newAlarmDate.setMinutes(currentDate.getMinutes() + timerValue);
+		setAlarmDate(newAlarmDate);
+		setAlarmSound(selectedSound);
 		setCountdownStarted(true);
 	};
 
-	const pauseCountdown = () => {
+	const handleStopAlarm = () => {
+		setCountdownValue(0);
 		setCountdownStarted(false);
-	};
-
-	const unpauseCountdown = () => {
-		setCountdownStarted(true);
-	};
-
-	const cancelCountdown = () => {
-		setCountdown(0);
-		setCountdownStarted(false);
+		setPlayAlarmSound(false);
 	};
 
 	useEffect(() => {
 		if (countdownStarted) {
-			const timer = setInterval(() => {
-				setCountdown((prevState) => prevState - 100);
-			}, 100);
-			return () => {
-				clearInterval(timer);
-			};
-		}
-	}, [countdownStarted]);
-
-	const convertMsToTime = (s: number) => {
-		const pad = (n: number) => {
-			if (n.toString().length === 1) {
-				return '0' + n;
+			if (countdownValue <= 0) {
+				setPlayAlarmSound(true);
 			} else {
-				return n;
+				const timer = setInterval(() => {
+					setCountdownValue((prevState) => prevState - 100);
+				}, 100);
+				return () => {
+					clearInterval(timer);
+				};
 			}
-		};
+		}
+	}, [countdownStarted, countdownValue]);
 
-		var ms = s % 1000;
-		s = (s - ms) / 1000;
-		var secs = s % 60;
-		s = (s - secs) / 60;
-		var mins = s % 60;
-		var hrs = (s - mins) / 60;
+	useEffect(() => {
+		playAlarmSound ? alarmSound.play() : alarmSound.pause();
+		if (playAlarmSound) {
+			alarmSound.loop = true;
+			alarmSound.play();
+		} else {
+			alarmSound.currentTime = 0;
+			alarmSound.pause();
+		}
+	}, [playAlarmSound, alarmSound]);
 
-		return pad(hrs) + ':' + pad(mins) + ':' + pad(secs);
+	const padString = (x: number | string) => {
+		if (x.toString().length === 1) {
+			return '0' + x;
+		} else {
+			return x;
+		}
 	};
+
+	const convertMsToTime = (value: number) => {
+		const ms = value % 1000;
+		value = (value - ms) / 1000;
+		const secs = value % 60;
+		value = (value - secs) / 60;
+		const mins = value % 60;
+		const hrs = (value - mins) / 60;
+
+		return padString(hrs) + ':' + padString(mins) + ':' + padString(secs);
+	};
+
 	return (
 		<div className={styles.app}>
-			<h3>Alarm will go off at:</h3>
-			<h3>
-				{alarmDate.toISOString().split('T')[0] +
-					', ' +
-					alarmDate.toISOString().split('T')[1].split('.')[0]}
-			</h3>
-			<div className={styles.countdown}>
-				<h3>Countdown</h3>
-				<h2>{convertMsToTime(countdown)}</h2>
+			<div className={styles.current_time}>
+				<h3>Current time:</h3>
+				<h3>
+					{new Date(
+						currentDate.getTime() - currentDate.getTimezoneOffset() * 60000
+					)
+						.toISOString()
+						.replace('T', ', ')
+						.slice(0, -5)}
+				</h3>
 			</div>
 			<div className={styles.container}>
-				<div className={styles.decrement_buttons}>
-					<button
-						type='button'
-						onClick={() => handleTimerChange(-1)}
-						disabled={countdown ? true : false}
-					>
-						- 1
-					</button>
-					<button
-						type='button'
-						onClick={() => handleTimerChange(-5)}
-						disabled={countdown ? true : false}
-					>
-						- 5
-					</button>
-					<button
-						type='button'
-						onClick={() => handleTimerChange(-10)}
-						disabled={countdown ? true : false}
-					>
-						- 10
-					</button>
-					<button
-						type='button'
-						onClick={() => handleTimerChange(-30)}
-						disabled={countdown ? true : false}
-					>
-						- 30
-					</button>
+				<div className={styles.minutes_buttons}>
+					<div className={styles.decrement_buttons}>
+						<button
+							type='button'
+							onClick={() => handleChangeTimerByMinutes(-1)}
+							disabled={countdownValue || playAlarmSound ? true : false}
+						>
+							- 1
+						</button>
+						<button
+							type='button'
+							onClick={() => handleChangeTimerByMinutes(-5)}
+							disabled={countdownValue || playAlarmSound ? true : false}
+						>
+							- 5
+						</button>
+						<button
+							type='button'
+							onClick={() => handleChangeTimerByMinutes(-10)}
+							disabled={countdownValue || playAlarmSound ? true : false}
+						>
+							- 10
+						</button>
+						<button
+							type='button'
+							onClick={() => handleChangeTimerByMinutes(-30)}
+							disabled={countdownValue || playAlarmSound ? true : false}
+						>
+							- 30
+						</button>
+					</div>
+					<div className={styles.increment_buttons}>
+						<button
+							type='button'
+							onClick={() => handleChangeTimerByMinutes(1)}
+							disabled={countdownValue || playAlarmSound ? true : false}
+						>
+							+ 1
+						</button>
+						<button
+							type='button'
+							onClick={() => handleChangeTimerByMinutes(5)}
+							disabled={countdownValue || playAlarmSound ? true : false}
+						>
+							+ 5
+						</button>
+						<button
+							type='button'
+							onClick={() => handleChangeTimerByMinutes(10)}
+							disabled={countdownValue || playAlarmSound ? true : false}
+						>
+							+ 10
+						</button>
+						<button
+							type='button'
+							onClick={() => handleChangeTimerByMinutes(30)}
+							disabled={countdownValue || playAlarmSound ? true : false}
+						>
+							+ 30
+						</button>
+					</div>
 				</div>
 				<div className={styles.main_controls}>
-					<div className={styles.input_field}>
+					<div className={styles.minutes_input}>
 						<label htmlFor='timerValue'>Set minutes for the countdown</label>
 						<input
 							type='number'
@@ -158,18 +256,19 @@ function App() {
 							id='timerValue'
 							min={0}
 							max={999}
-							value={Math.trunc(timerValue)}
-							onChange={(e) => handleTimerChange(Number(e.target.value))}
-							disabled={countdown ? true : false}
+							value={timerValue}
+							onChange={handleChangeTimerByInput}
+							disabled={countdownValue ? true : false}
 						/>
 					</div>
-					<div className={styles.select_field}>
+					<div className={styles.time_select}>
 						<p>Or set a time for the alarm</p>
 						<select
 							name='selectHour'
 							id='selectHour'
 							onChange={handleHourChange}
-							value={alarmDate.getHours().toString()}
+							value={padString(alarmDate.getHours())}
+							disabled={countdownStarted || playAlarmSound ? true : false}
 						>
 							<option value='00'>00</option>
 							<option value='01'>01</option>
@@ -200,7 +299,8 @@ function App() {
 							name='selectMinute'
 							id='selectMinute'
 							onChange={handleMinuteChange}
-							value={alarmDate.getMinutes().toString()}
+							value={padString(alarmDate.getMinutes())}
+							disabled={countdownStarted || playAlarmSound ? true : false}
 						>
 							<option value='00'>00</option>
 							<option value='01'>01</option>
@@ -264,247 +364,110 @@ function App() {
 							<option value='59'>59</option>
 						</select>
 					</div>
+					<div className={styles.sound_select}>
+						<p>Pick alarm sound</p>
+						<select
+							name='selectSound'
+							id='selectSound'
+							onChange={handleSoundChange}
+							disabled={countdownStarted ? true : false}
+						>
+							<option value='Ringtone'>Ringtone</option>
+							<option value='Rooster'>Rooster</option>
+							<option value='Bell'>Bell</option>
+							<option value='Siren'>Siren</option>
+						</select>
+						<span
+							className={`${styles.play_sound} ${
+								countdownStarted ? styles.disabled : ''
+							}`}
+							onClick={countdownStarted ? undefined : handleTestSound}
+						>
+							{testSound ? (
+								<svg
+									xmlns='http://www.w3.org/2000/svg'
+									width='32'
+									height='32'
+									viewBox='0 0 24 24'
+									fill='none'
+									stroke='currentColor'
+									strokeWidth='1'
+									strokeLinecap='round'
+									strokeLinejoin='round'
+								>
+									<circle cx='12' cy='12' r='10'></circle>
+									<rect x='9' y='9' width='6' height='6' strokeWidth='1'></rect>
+								</svg>
+							) : (
+								<svg
+									xmlns='http://www.w3.org/2000/svg'
+									width='32'
+									height='32'
+									viewBox='0 0 24 24'
+									fill='none'
+									stroke='currentColor'
+									strokeWidth='1'
+									strokeLinecap='round'
+									strokeLinejoin='round'
+								>
+									<circle cx='12' cy='12' r='10'></circle>
+									<polygon
+										points='10 8 16 12 10 16 10 8'
+										strokeWidth='1'
+									></polygon>
+								</svg>
+							)}
+						</span>
+					</div>
 					<div className={styles.countdown_controls}>
-						{countdown ? (
-							<button
-								type='button'
-								onClick={() => unpauseCountdown()}
-								disabled={countdownStarted ? true : false}
-							>
-								Unpause
-							</button>
-						) : (
-							<button
-								type='button'
-								onClick={() => startCountdown()}
-								disabled={countdown || !timerValue ? true : false}
-							>
-								Start
-							</button>
-						)}
 						<button
 							type='button'
-							onClick={resetAlarmValues}
-							disabled={countdown ? true : false}
+							onClick={() => handleStartCountdown()}
+							disabled={
+								countdownStarted || !timerValue || playAlarmSound ? true : false
+							}
+						>
+							Start
+						</button>
+						<button
+							type='button'
+							onClick={handleResetValues}
+							disabled={countdownStarted || playAlarmSound ? true : false}
 						>
 							Reset
 						</button>
 						<button
 							type='button'
-							onClick={pauseCountdown}
-							disabled={countdownStarted ? false : true}
+							onClick={handleStopAlarm}
+							disabled={!countdownStarted ? true : false}
+							className={playAlarmSound ? styles.alarmOn : ''}
 						>
-							Pause
-						</button>
-						<button
-							type='button'
-							onClick={cancelCountdown}
-							disabled={countdown ? false : true}
-						>
-							Cancel
+							Stop
 						</button>
 					</div>
+					<div className={styles.countdown}>
+						<h3>Countdown</h3>
+						<h2>{convertMsToTime(countdownValue)}</h2>
+						<h3>Alarm will go off at:</h3>
+						<h3>
+							{countdownStarted
+								? new Date(
+										alarmDate.getTime() - alarmDate.getTimezoneOffset() * 60000
+								  )
+										.toISOString()
+										.replace('T', ', ')
+										.slice(0, -5)
+								: new Date(
+										currentDate.getTime() +
+											timerValue * 60 * 1000 -
+											currentDate.getTimezoneOffset() * 60000
+								  )
+										.toISOString()
+										.replace('T', ', ')
+										.slice(0, -5)}
+						</h3>
+					</div>
 				</div>
-				<div className={styles.increment_buttons}>
-					<button
-						type='button'
-						onClick={() => handleTimerChange(1)}
-						disabled={countdown ? true : false}
-					>
-						+ 1
-					</button>
-					<button
-						type='button'
-						onClick={() => handleTimerChange(5)}
-						disabled={countdown ? true : false}
-					>
-						+ 5
-					</button>
-					<button
-						type='button'
-						onClick={() => handleTimerChange(10)}
-						disabled={countdown ? true : false}
-					>
-						+ 10
-					</button>
-					<button
-						type='button'
-						onClick={() => handleTimerChange(30)}
-						disabled={countdown ? true : false}
-					>
-						+ 30
-					</button>
-				</div>
-			</div>
-			<div className={styles.hour_selectors}>
-				<button
-					type='button'
-					onClick={() => setTimerFromHour('00')}
-					disabled={countdown ? true : false}
-				>
-					0
-				</button>
-				<button
-					type='button'
-					onClick={() => setTimerFromHour('01')}
-					disabled={countdown ? true : false}
-				>
-					1
-				</button>
-				<button
-					type='button'
-					onClick={() => setTimerFromHour('02')}
-					disabled={countdown ? true : false}
-				>
-					2
-				</button>
-				<button
-					type='button'
-					onClick={() => setTimerFromHour('03')}
-					disabled={countdown ? true : false}
-				>
-					3
-				</button>
-				<button
-					type='button'
-					onClick={() => setTimerFromHour('04')}
-					disabled={countdown ? true : false}
-				>
-					4
-				</button>
-				<button
-					type='button'
-					onClick={() => setTimerFromHour('05')}
-					disabled={countdown ? true : false}
-				>
-					5
-				</button>
-				<button
-					type='button'
-					onClick={() => setTimerFromHour('06')}
-					disabled={countdown ? true : false}
-				>
-					6
-				</button>
-				<button
-					type='button'
-					onClick={() => setTimerFromHour('07')}
-					disabled={countdown ? true : false}
-				>
-					7
-				</button>
-				<button
-					type='button'
-					onClick={() => setTimerFromHour('08')}
-					disabled={countdown ? true : false}
-				>
-					8
-				</button>
-				<button
-					type='button'
-					onClick={() => setTimerFromHour('09')}
-					disabled={countdown ? true : false}
-				>
-					9
-				</button>
-				<button
-					type='button'
-					onClick={() => setTimerFromHour('10')}
-					disabled={countdown ? true : false}
-				>
-					10
-				</button>
-				<button
-					type='button'
-					onClick={() => setTimerFromHour('11')}
-					disabled={countdown ? true : false}
-				>
-					11
-				</button>
-				<button
-					type='button'
-					onClick={() => setTimerFromHour('12')}
-					disabled={countdown ? true : false}
-				>
-					12
-				</button>
-				<button
-					type='button'
-					onClick={() => setTimerFromHour('13')}
-					disabled={countdown ? true : false}
-				>
-					13
-				</button>
-				<button
-					type='button'
-					onClick={() => setTimerFromHour('14')}
-					disabled={countdown ? true : false}
-				>
-					14
-				</button>
-				<button
-					type='button'
-					onClick={() => setTimerFromHour('15')}
-					disabled={countdown ? true : false}
-				>
-					15
-				</button>
-				<button
-					type='button'
-					onClick={() => setTimerFromHour('16')}
-					disabled={countdown ? true : false}
-				>
-					16
-				</button>
-				<button
-					type='button'
-					onClick={() => setTimerFromHour('17')}
-					disabled={countdown ? true : false}
-				>
-					17
-				</button>
-				<button
-					type='button'
-					onClick={() => setTimerFromHour('18')}
-					disabled={countdown ? true : false}
-				>
-					18
-				</button>
-				<button
-					type='button'
-					onClick={() => setTimerFromHour('19')}
-					disabled={countdown ? true : false}
-				>
-					19
-				</button>
-				<button
-					type='button'
-					onClick={() => setTimerFromHour('20')}
-					disabled={countdown ? true : false}
-				>
-					20
-				</button>
-				<button
-					type='button'
-					onClick={() => setTimerFromHour('21')}
-					disabled={countdown ? true : false}
-				>
-					21
-				</button>
-				<button
-					type='button'
-					onClick={() => setTimerFromHour('22')}
-					disabled={countdown ? true : false}
-				>
-					22
-				</button>
-				<button
-					type='button'
-					onClick={() => setTimerFromHour('23')}
-					disabled={countdown ? true : false}
-				>
-					23
-				</button>
 			</div>
 		</div>
 	);
