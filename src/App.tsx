@@ -30,6 +30,7 @@ function App() {
 		new Audio('./sounds/Ringtone.mp3')
 	);
 	const [playAlarmSound, setPlayAlarmSound] = useState(false);
+	const [progressValue, setProgressValue] = useState(0);
 
 	useEffect(() => {
 		const timer = setInterval(() => {
@@ -163,6 +164,7 @@ function App() {
 		setCountdownValue(0);
 		setCountdownStarted(false);
 		setPlayAlarmSound(false);
+		setProgressValue(0);
 	};
 
 	useEffect(() => {
@@ -172,13 +174,16 @@ function App() {
 			} else {
 				const timer = setInterval(() => {
 					setCountdownValue((prevState) => prevState - 100);
+					const progress =
+						((timerValue * 60 * 1000 - countdownValue) / countdownValue) * 100;
+					setProgressValue(progress);
 				}, 100);
 				return () => {
 					clearInterval(timer);
 				};
 			}
 		}
-	}, [countdownStarted, countdownValue]);
+	}, [countdownStarted, countdownValue, timerValue]);
 
 	useEffect(() => {
 		if (playAlarmSound) {
@@ -523,7 +528,14 @@ function App() {
 								Stop
 							</button>
 						</div>
-						<div className={styles.countdown}>
+						<div
+							className={styles.countdown}
+							style={
+								{
+									'--progress-bar': `${progressValue.toFixed(2)}%`,
+								} as React.CSSProperties
+							}
+						>
 							<div>
 								<h3>Countdown:</h3>
 								<h2>
