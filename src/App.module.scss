@@ -100,8 +100,8 @@
 	.current_time {
 		padding: 8px;
 		margin: 8px auto;
-		width: -webkit-fit-content;
-		width: -moz-fit-content;
+		width: -webkit-min-content;
+		width: -moz-min-content;
 		width: min-content;
 		color: var(--secondary);
 		border: 4px solid var(--secondary);
@@ -109,6 +109,8 @@
 		transition: 0.75s ease;
 
 		@media only screen and (min-width: 600px) {
+			width: -webkit-fit-content;
+			width: -moz-fit-content;
 			width: fit-content;
 		}
 	}
