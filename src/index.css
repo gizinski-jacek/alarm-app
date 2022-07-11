@@ -24,10 +24,6 @@ input[type='number'] {
 	-moz-appearance: textfield;
 }
 
-#root {
-	text-align: center;
-}
-
 * {
 	box-sizing: border-box;
 }
