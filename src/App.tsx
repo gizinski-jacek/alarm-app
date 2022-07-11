@@ -71,10 +71,16 @@ function App() {
 
 	const handleChangeTimerByInput = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const value = Number(e.target.value);
-		setTimerValue(value);
-		const newAlarmDate = alarmDate;
-		newAlarmDate.setMinutes(alarmDate.getMinutes() + value);
-		setAlarmDate(newAlarmDate);
+		if (value < 0) {
+			setTimerValue(0);
+		} else if (value > 1440) {
+			setTimerValue(1440);
+		} else {
+			setTimerValue(value);
+			const newAlarmDate = alarmDate;
+			newAlarmDate.setMinutes(alarmDate.getMinutes() + value);
+			setAlarmDate(newAlarmDate);
+		}
 	};
 
 	const handleResetValues = () => {
@@ -318,7 +324,8 @@ function App() {
 								name='timerValue'
 								id='timerValue'
 								min={0}
-								max={999}
+								max={1440}
+								step={1}
 								value={timerValue}
 								onChange={handleChangeTimerByInput}
 								disabled={countdownValue ? true : false}
