@@ -111,8 +111,7 @@ function App() {
 	}, [selectedSound]);
 
 	const handleStartCountdown = () => {
-		setCountdownValue(timerValue * 60 * 25);
-		// setCountdownValue(timerValue * 60 * 1000);
+		setCountdownValue(timerValue * 60 * 1000);
 		const newAlarmDate = structuredClone(currentDate);
 		newAlarmDate.setMinutes(currentDate.getMinutes() + timerValue);
 		setAlarmDate(newAlarmDate);
@@ -142,7 +141,6 @@ function App() {
 	}, [countdownStarted, countdownValue]);
 
 	useEffect(() => {
-		playAlarmSound ? alarmSound.play() : alarmSound.pause();
 		if (playAlarmSound) {
 			alarmSound.loop = true;
 			alarmSound.play();
