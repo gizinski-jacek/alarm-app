@@ -1,11 +1,17 @@
+:root {
+	--progress-bar: 0%;
+}
+
 [data-theme-mode='light'] {
 	--primary: rgb(225, 225, 225);
 	--secondary: rgb(25, 25, 25);
+	--secondary-a10: rgba(25, 25, 25, 0.1);
 }
 
 [data-theme-mode='dark'] {
 	--primary: rgb(25, 25, 25);
 	--secondary: rgb(225, 225, 225);
+	--secondary-a10: rgba(225, 225, 225, 0.1);
 }
 
 .app {
@@ -213,7 +219,7 @@
 			fill: var(--primary);
 			border-radius: 50%;
 			cursor: pointer;
-			transition: 0.75s ease;
+			transition: 0.75s ease, opacity 0s;
 		}
 	}
 
@@ -268,7 +274,8 @@
 		width: fit-content;
 		border-radius: 16px;
 		border: 4px solid var(--secondary);
-		transition: 0.75s ease;
+		transition: all 0.75s ease;
+		position: relative;
 
 		h2,
 		h3 {
@@ -278,6 +285,17 @@
 		div {
 			margin: 8px;
 		}
+	}
+
+	.countdown::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		background-color: var(--secondary-a10);
+		width: var(--progress-bar);
+		transition: background-color 0.75s ease;
 	}
 
 	.footer {
