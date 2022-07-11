@@ -175,7 +175,7 @@ function App() {
 				const timer = setInterval(() => {
 					setCountdownValue((prevState) => prevState - 100);
 					const progress =
-						((timerValue * 60 * 1000 - countdownValue) / countdownValue) * 100;
+						((timerValue - countdownValue / 60 / 1000) / timerValue) * 100;
 					setProgressValue(progress);
 				}, 100);
 				return () => {
