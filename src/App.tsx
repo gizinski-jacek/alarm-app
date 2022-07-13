@@ -25,6 +25,7 @@ function App() {
 	);
 	const [testSound, setTestSound] = useState(false);
 	const [countdownStarted, setCountdownStarted] = useState(false);
+	const [startedAt, setStartedAt] = useState(0);
 	const [countdownValue, setCountdownValue] = useState(0);
 	const [alarmSound, setAlarmSound] = useState(
 		new Audio('./sounds/Ringtone.mp3')
@@ -35,7 +36,7 @@ function App() {
 	useEffect(() => {
 		const timer = setInterval(() => {
 			setCurrentDate(new Date());
-		}, 100);
+		}, 1000);
 
 		return () => {
 			clearInterval(timer);
@@ -153,6 +154,7 @@ function App() {
 
 	const handleStartCountdown = () => {
 		setCountdownValue(timerValue * 60 * 1000);
+		setStartedAt(Date.now());
 		const newAlarmDate = structuredClone(currentDate);
 		newAlarmDate.setMinutes(currentDate.getMinutes() + timerValue);
 		setAlarmDate(newAlarmDate);
@@ -161,7 +163,7 @@ function App() {
 	};
 
 	const handleStopAlarm = () => {
-		setCountdownValue(0);
+		setStartedAt(0);
 		setCountdownStarted(false);
 		setPlayAlarmSound(false);
 		setProgressValue(0);
@@ -169,21 +171,24 @@ function App() {
 
 	useEffect(() => {
 		if (countdownStarted) {
-			if (countdownValue <= 0) {
+			const dateNow = Date.now();
+			if (dateNow >= startedAt + timerValue * 60 * 1000) {
 				setPlayAlarmSound(true);
 			} else {
 				const timer = setInterval(() => {
-					setCountdownValue((prevState) => prevState - 100);
+					const newCountdownValue =
+						startedAt + timerValue * 60 * 1000 - dateNow;
+					setCountdownValue(newCountdownValue);
 					const progress =
-						((timerValue - countdownValue / 60 / 1000) / timerValue) * 100;
+						((timerValue - newCountdownValue / 60 / 1000) / timerValue) * 100;
 					setProgressValue(progress);
-				}, 100);
+				}, 1000);
 				return () => {
 					clearInterval(timer);
 				};
 			}
 		}
-	}, [countdownStarted, countdownValue, timerValue]);
+	}, [countdownStarted, startedAt, timerValue, countdownValue]);
 
 	useEffect(() => {
 		if (playAlarmSound) {
@@ -264,28 +269,28 @@ function App() {
 							<button
 								type='button'
 								onClick={() => handleTimerDecrement(1)}
-								disabled={countdownValue || playAlarmSound ? true : false}
+								disabled={startedAt || playAlarmSound ? true : false}
 							>
 								- 1
 							</button>
 							<button
 								type='button'
 								onClick={() => handleTimerDecrement(5)}
-								disabled={countdownValue || playAlarmSound ? true : false}
+								disabled={startedAt || playAlarmSound ? true : false}
 							>
 								- 5
 							</button>
 							<button
 								type='button'
 								onClick={() => handleTimerDecrement(10)}
-								disabled={countdownValue || playAlarmSound ? true : false}
+								disabled={startedAt || playAlarmSound ? true : false}
 							>
 								- 10
 							</button>
 							<button
 								type='button'
 								onClick={() => handleTimerDecrement(30)}
-								disabled={countdownValue || playAlarmSound ? true : false}
+								disabled={startedAt || playAlarmSound ? true : false}
 							>
 								- 30
 							</button>
@@ -294,28 +299,28 @@ function App() {
 							<button
 								type='button'
 								onClick={() => handleTimerIncrement(1)}
-								disabled={countdownValue || playAlarmSound ? true : false}
+								disabled={startedAt || playAlarmSound ? true : false}
 							>
 								+ 1
 							</button>
 							<button
 								type='button'
 								onClick={() => handleTimerIncrement(5)}
-								disabled={countdownValue || playAlarmSound ? true : false}
+								disabled={startedAt || playAlarmSound ? true : false}
 							>
 								+ 5
 							</button>
 							<button
 								type='button'
 								onClick={() => handleTimerIncrement(10)}
-								disabled={countdownValue || playAlarmSound ? true : false}
+								disabled={startedAt || playAlarmSound ? true : false}
 							>
 								+ 10
 							</button>
 							<button
 								type='button'
 								onClick={() => handleTimerIncrement(30)}
-								disabled={countdownValue || playAlarmSound ? true : false}
+								disabled={startedAt || playAlarmSound ? true : false}
 							>
 								+ 30
 							</button>
@@ -333,7 +338,7 @@ function App() {
 								step={1}
 								value={timerValue}
 								onChange={handleChangeTimerByInput}
-								disabled={countdownValue ? true : false}
+								disabled={startedAt ? true : false}
 							/>
 						</div>
 						<div className={styles.time_select}>
