@@ -295,7 +295,7 @@
 		left: 0;
 		background-color: var(--secondary-a10);
 		width: var(--progress-bar);
-		transition: background-color 0.75s ease;
+		transition: background-color 1s ease, width 1s ease;
 	}
 
 	.footer {
