@@ -64,9 +64,10 @@
 	}
 
 	.theme_toggle {
+		padding: 8px;
 		position: absolute;
-		top: 8px;
-		left: 8px;
+		top: 0;
+		left: 0;
 		display: flex;
 		color: var(--secondary);
 		cursor: pointer;
