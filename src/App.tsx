@@ -129,6 +129,8 @@ function App() {
 
 	const handleSoundChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 		setSelectedSound(new Audio(`./sounds/${e.target.value}.mp3`));
+		selectedSound.pause();
+		setTestSound(false);
 	};
 
 	const handleTestSound = () => {
@@ -275,8 +277,9 @@ function App() {
 									<div className={styles.container}>
 										<div className={styles.minutes_buttons}>
 											<div className={styles.decrement_buttons}>
-												{[30, 10, 5, 1].map((num) => (
+												{[30, 10, 5, 1].map((num, i) => (
 													<button
+														key={i}
 														type='button'
 														onClick={() => handleTimerDecrement(num)}
 														disabled={
@@ -288,8 +291,9 @@ function App() {
 												))}
 											</div>
 											<div className={styles.increment_buttons}>
-												{[1, 5, 10, 30].map((num) => (
+												{[1, 5, 10, 30].map((num, i) => (
 													<button
+														key={i}
 														type='button'
 														onClick={() => handleTimerIncrement(num)}
 														disabled={
@@ -330,8 +334,8 @@ function App() {
 													}
 												>
 													{Array.from({ length: 24 }, (x, i) => i).map(
-														(num) => (
-															<option value={num.toString()}>
+														(num, i) => (
+															<option key={i} value={num.toString()}>
 																{String(num).padStart(2, '0')}
 															</option>
 														)
@@ -347,8 +351,8 @@ function App() {
 													}
 												>
 													{Array.from({ length: 60 }, (x, i) => i).map(
-														(num) => (
-															<option value={num.toString()}>
+														(num, i) => (
+															<option key={i} value={num.toString()}>
 																{String(num).padStart(2, '0')}
 															</option>
 														)
