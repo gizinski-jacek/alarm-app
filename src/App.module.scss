@@ -19,7 +19,7 @@
 	flex-direction: column;
 	min-height: 100vh;
 	background-color: var(--primary);
-	min-width: 420px;
+	min-width: 500px;
 	transition: 0.75s ease;
 
 	.main {
@@ -130,6 +130,14 @@
 		@media only screen and (min-width: 600px) {
 			flex-direction: row;
 			justify-content: space-between;
+		}
+
+		.decrement_buttons {
+			direction: rtl;
+
+			button {
+				direction: ltr;
+			}
 		}
 	}
 
