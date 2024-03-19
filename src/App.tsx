@@ -45,43 +45,45 @@ function App() {
 	}, []);
 
 	const handleTimerDecrement = (value: number) => {
-		if (timerValue - value < 0) {
+		const newAlarmDate = structuredClone(alarmDate);
+		if (timerValue === 0) {
+			return;
+		} else if (timerValue - value < 0) {
 			setTimerValue(0);
-			const newAlarmDate = alarmDate;
-			newAlarmDate.setMinutes(0);
+			newAlarmDate.setMinutes(newAlarmDate.getMinutes() - timerValue);
 			setAlarmDate(newAlarmDate);
 		} else {
 			setTimerValue((prevState) => prevState - value);
-			const newAlarmDate = alarmDate;
 			newAlarmDate.setMinutes(alarmDate.getMinutes() - value);
 			setAlarmDate(newAlarmDate);
 		}
 	};
 
 	const handleTimerIncrement = (value: number) => {
-		if (timerValue + value > 1440) {
+		const newAlarmDate = structuredClone(alarmDate);
+		if (timerValue === 1440) {
+			return;
+		} else if (timerValue + value > 1440) {
 			setTimerValue(1440);
-			const newAlarmDate = alarmDate;
-			newAlarmDate.setMinutes(1440);
+			newAlarmDate.setMinutes(alarmDate.getMinutes() + (1440 % timerValue));
 			setAlarmDate(newAlarmDate);
 		} else {
 			setTimerValue((prevState) => prevState + value);
-			const newAlarmDate = alarmDate;
-			newAlarmDate.setMinutes(alarmDate.getMinutes() + value);
+			newAlarmDate.setMinutes(newAlarmDate.getMinutes() + value);
 			setAlarmDate(newAlarmDate);
 		}
 	};
 
 	const handleChangeTimerByInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const value = Number(e.target.value);
+		const value = parseInt(e.target.value);
 		if (value < 0) {
 			setTimerValue(0);
 		} else if (value > 1440) {
 			setTimerValue(1440);
 		} else {
 			setTimerValue(value);
-			const newAlarmDate = alarmDate;
-			newAlarmDate.setMinutes(alarmDate.getMinutes() + value);
+			const newAlarmDate = structuredClone(currentDate);
+			newAlarmDate.setTime(newAlarmDate.getTime() + value * 60 * 1000);
 			setAlarmDate(newAlarmDate);
 		}
 	};
@@ -92,38 +94,54 @@ function App() {
 	};
 
 	const handleHourChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-		const value = Number(e.target.value);
-		if (value <= currentDate.getHours()) {
-			const newAlarmDate = structuredClone(currentDate);
-			newAlarmDate.setDate(currentDate.getDate() + 1);
-			newAlarmDate.setHours(value);
+		const value = parseInt(e.target.value);
+		const newAlarmDate = structuredClone(alarmDate);
+		newAlarmDate.setHours(value);
+		if (newAlarmDate.getTime() <= currentDate.getTime()) {
+			newAlarmDate.setDate(newAlarmDate.getDate() + 1);
 			setAlarmDate(newAlarmDate);
-			const newTimerValue = newAlarmDate.getTime() - currentDate.getTime();
-			setTimerValue(newTimerValue / 1000 / 60);
+			const newTimerValue =
+				newAlarmDate.getHours() - currentDate.getHours() + 24;
+			setTimerValue(newTimerValue * 60);
+		} else if (
+			newAlarmDate.getTime() >
+			currentDate.getTime() + 24 * 60 * 60 * 1000
+		) {
+			newAlarmDate.setDate(newAlarmDate.getDate() - 1);
+			setAlarmDate(newAlarmDate);
+			const newTimerValue = newAlarmDate.getHours() - currentDate.getHours();
+			setTimerValue(newTimerValue * 60);
 		} else {
-			const newAlarmDate = structuredClone(currentDate);
-			newAlarmDate.setHours(value);
 			setAlarmDate(newAlarmDate);
-			const newTimerValue = newAlarmDate.getTime() - currentDate.getTime();
-			setTimerValue(newTimerValue / 1000 / 60);
+			const newTimerValue = newAlarmDate.getHours() - currentDate.getHours();
+			setTimerValue(newTimerValue * 60);
 		}
 	};
 
 	const handleMinuteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-		const value = Number(e.target.value);
-		if (value <= currentDate.getMinutes()) {
-			const newAlarmDate = structuredClone(currentDate);
-			newAlarmDate.setDate(currentDate.getDate() + 1);
-			newAlarmDate.setMinutes(value);
+		const value = parseInt(e.target.value);
+		const newAlarmDate = structuredClone(alarmDate);
+		newAlarmDate.setMinutes(value);
+		if (newAlarmDate.getTime() <= currentDate.getTime()) {
+			newAlarmDate.setDate(newAlarmDate.getDate() + 1);
 			setAlarmDate(newAlarmDate);
-			const newTimerValue = newAlarmDate.getTime() - currentDate.getTime();
-			setTimerValue(newTimerValue / 1000 / 60);
+			const newTimerValue =
+				newAlarmDate.getMinutes() - currentDate.getMinutes() + 24 * 60;
+			setTimerValue(newTimerValue);
+		} else if (
+			newAlarmDate.getTime() >
+			currentDate.getTime() + 24 * 60 * 60 * 1000
+		) {
+			newAlarmDate.setDate(newAlarmDate.getDate() - 1);
+			setAlarmDate(newAlarmDate);
+			const newTimerValue =
+				newAlarmDate.getMinutes() - currentDate.getMinutes();
+			setTimerValue(newTimerValue);
 		} else {
-			const newAlarmDate = structuredClone(currentDate);
-			newAlarmDate.setMinutes(value);
 			setAlarmDate(newAlarmDate);
-			const newTimerValue = newAlarmDate.getTime() - currentDate.getTime();
-			setTimerValue(newTimerValue / 1000 / 60);
+			const newTimerValue =
+				newAlarmDate.getMinutes() - currentDate.getMinutes();
+			setTimerValue(newTimerValue);
 		}
 	};
 
@@ -203,12 +221,8 @@ function App() {
 		}
 	}, [playAlarmSound, alarmSound]);
 
-	const padString = (x: number | string) => {
-		if (x.toString().length === 1) {
-			return '0' + x;
-		} else {
-			return x;
-		}
+	const padNumber = (x: number): string => {
+		return x.toString().padStart(2, '0');
 	};
 
 	const convertMsToTime = (value: number) => {
@@ -219,7 +233,7 @@ function App() {
 		const mins = value % 60;
 		const hrs = (value - mins) / 60;
 
-		return padString(hrs) + ':' + padString(mins) + ':' + padString(secs);
+		return padNumber(hrs) + ':' + padNumber(mins) + ':' + padNumber(secs);
 	};
 
 	return (
@@ -277,7 +291,7 @@ function App() {
 									<div className={styles.container}>
 										<div className={styles.minutes_buttons}>
 											<div className={styles.decrement_buttons}>
-												{[30, 10, 5, 1].map((num, i) => (
+												{[1, 2, 3, 4, 5, 10, 30].map((num, i) => (
 													<button
 														key={i}
 														type='button'
@@ -291,7 +305,7 @@ function App() {
 												))}
 											</div>
 											<div className={styles.increment_buttons}>
-												{[1, 5, 10, 30].map((num, i) => (
+												{[1, 2, 3, 4, 5, 10, 30].map((num, i) => (
 													<button
 														key={i}
 														type='button'
@@ -328,15 +342,15 @@ function App() {
 													name='selectHour'
 													id='selectHour'
 													onChange={handleHourChange}
-													value={padString(alarmDate.getHours())}
+													value={padNumber(alarmDate.getHours())}
 													disabled={
 														countdownStarted || playAlarmSound ? true : false
 													}
 												>
 													{Array.from({ length: 24 }, (x, i) => i).map(
 														(num, i) => (
-															<option key={i} value={num.toString()}>
-																{String(num).padStart(2, '0')}
+															<option key={i} value={padNumber(num)}>
+																{padNumber(num)}
 															</option>
 														)
 													)}
@@ -345,15 +359,15 @@ function App() {
 													name='selectMinute'
 													id='selectMinute'
 													onChange={handleMinuteChange}
-													value={padString(alarmDate.getMinutes())}
+													value={padNumber(alarmDate.getMinutes())}
 													disabled={
 														countdownStarted || playAlarmSound ? true : false
 													}
 												>
 													{Array.from({ length: 60 }, (x, i) => i).map(
 														(num, i) => (
-															<option key={i} value={num.toString()}>
-																{String(num).padStart(2, '0')}
+															<option key={i} value={padNumber(num)}>
+																{padNumber(num)}
 															</option>
 														)
 													)}
