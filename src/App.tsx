@@ -19,15 +19,11 @@ function App() {
 	};
 
 	const [currentDate, setCurrentDate] = useState(new Date());
-	const [timerValue, setTimerValue] = useState(0);
 	const [alarmDate, setAlarmDate] = useState(new Date());
-	const [selectedSound, setSelectedSound] = useState(
-		new Audio('./sounds/Ringtone.mp3')
-	);
+	const [selectedSound, setSelectedSound] = useState('Ringtone');
 	const [testSound, setTestSound] = useState(false);
-	const [countdownStarted, setCountdownStarted] = useState(false);
-	const [startedAt, setStartedAt] = useState(0);
-	const [countdownValue, setCountdownValue] = useState(0);
+	const [startedAt, setStartedAt] = useState<number | null>(null);
+	const [countdownValue, setCountdownValue] = useState<number | null>(null);
 	const [alarmSound, setAlarmSound] = useState(
 		new Audio('./sounds/Ringtone.mp3')
 	);
@@ -46,162 +42,117 @@ function App() {
 
 	const handleTimerDecrement = (value: number) => {
 		const newAlarmDate = structuredClone(alarmDate);
-		if (timerValue === 0) {
-			return;
-		} else if (timerValue - value < 0) {
-			setTimerValue(0);
-			newAlarmDate.setMinutes(newAlarmDate.getMinutes() - timerValue);
-			setAlarmDate(newAlarmDate);
+		newAlarmDate.setMinutes(newAlarmDate.getMinutes() - value);
+		if (newAlarmDate.getTime() < currentDate.getTime()) {
+			setAlarmDate(currentDate);
 		} else {
-			setTimerValue((prevState) => prevState - value);
-			newAlarmDate.setMinutes(alarmDate.getMinutes() - value);
+			newAlarmDate.setSeconds(0);
 			setAlarmDate(newAlarmDate);
 		}
 	};
 
 	const handleTimerIncrement = (value: number) => {
 		const newAlarmDate = structuredClone(alarmDate);
-		if (timerValue === 1440) {
-			return;
-		} else if (timerValue + value > 1440) {
-			setTimerValue(1440);
-			newAlarmDate.setMinutes(alarmDate.getMinutes() + (1440 % timerValue));
-			setAlarmDate(newAlarmDate);
+		newAlarmDate.setMinutes(newAlarmDate.getMinutes() + value);
+		const maxDate = structuredClone(currentDate);
+		maxDate.setDate(maxDate.getDate() + 7);
+		if (newAlarmDate.getTime() > maxDate.getTime()) {
+			setAlarmDate(maxDate);
 		} else {
-			setTimerValue((prevState) => prevState + value);
-			newAlarmDate.setMinutes(newAlarmDate.getMinutes() + value);
+			newAlarmDate.setSeconds(0);
 			setAlarmDate(newAlarmDate);
 		}
 	};
 
-	const handleChangeTimerByInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const value = parseInt(e.target.value);
-		if (value < 0) {
-			setTimerValue(0);
-		} else if (value > 1440) {
-			setTimerValue(1440);
-		} else {
-			setTimerValue(value);
-			const newAlarmDate = structuredClone(currentDate);
-			newAlarmDate.setTime(newAlarmDate.getTime() + value * 60 * 1000);
-			setAlarmDate(newAlarmDate);
-		}
-	};
-
-	const handleResetValues = () => {
-		setTimerValue(0);
-		setAlarmDate(new Date(currentDate));
-	};
-
-	const handleHourChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-		const value = parseInt(e.target.value);
+	const handleDateSelect = (
+		e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+	) => {
+		const { value, name } = e.target;
 		const newAlarmDate = structuredClone(alarmDate);
-		newAlarmDate.setHours(value);
-		if (newAlarmDate.getTime() <= currentDate.getTime()) {
-			newAlarmDate.setDate(newAlarmDate.getDate() + 1);
-			setAlarmDate(newAlarmDate);
-			const newTimerValue =
-				newAlarmDate.getHours() - currentDate.getHours() + 24;
-			setTimerValue(newTimerValue * 60);
-		} else if (
-			newAlarmDate.getTime() >
-			currentDate.getTime() + 24 * 60 * 60 * 1000
-		) {
-			newAlarmDate.setDate(newAlarmDate.getDate() - 1);
-			setAlarmDate(newAlarmDate);
-			const newTimerValue = newAlarmDate.getHours() - currentDate.getHours();
-			setTimerValue(newTimerValue * 60);
-		} else {
-			setAlarmDate(newAlarmDate);
-			const newTimerValue = newAlarmDate.getHours() - currentDate.getHours();
-			setTimerValue(newTimerValue * 60);
+		if (name === 'selectDate') {
+			const [year, month, day] = value.split('-').map((v) => parseInt(v));
+			newAlarmDate.setFullYear(year);
+			newAlarmDate.setMonth(month - 1);
+			newAlarmDate.setDate(day);
+		} else if (name === 'selectHour') {
+			const hours = parseInt(value);
+			newAlarmDate.setHours(hours);
+		} else if (name === 'selectMinute') {
+			const minutes = parseInt(value);
+			newAlarmDate.setMinutes(minutes);
 		}
-	};
-
-	const handleMinuteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-		const value = parseInt(e.target.value);
-		const newAlarmDate = structuredClone(alarmDate);
-		newAlarmDate.setMinutes(value);
-		if (newAlarmDate.getTime() <= currentDate.getTime()) {
-			newAlarmDate.setDate(newAlarmDate.getDate() + 1);
-			setAlarmDate(newAlarmDate);
-			const newTimerValue =
-				newAlarmDate.getMinutes() - currentDate.getMinutes() + 24 * 60;
-			setTimerValue(newTimerValue);
-		} else if (
-			newAlarmDate.getTime() >
-			currentDate.getTime() + 24 * 60 * 60 * 1000
-		) {
-			newAlarmDate.setDate(newAlarmDate.getDate() - 1);
-			setAlarmDate(newAlarmDate);
-			const newTimerValue =
-				newAlarmDate.getMinutes() - currentDate.getMinutes();
-			setTimerValue(newTimerValue);
+		const maxDate = structuredClone(currentDate);
+		maxDate.setDate(maxDate.getDate() + 7);
+		if (newAlarmDate.getTime() < currentDate.getTime()) {
+			setAlarmDate(currentDate);
+		} else if (newAlarmDate.getTime() > maxDate.getTime()) {
+			setAlarmDate(maxDate);
 		} else {
+			newAlarmDate.setSeconds(0);
 			setAlarmDate(newAlarmDate);
-			const newTimerValue =
-				newAlarmDate.getMinutes() - currentDate.getMinutes();
-			setTimerValue(newTimerValue);
 		}
 	};
 
 	const handleSoundChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-		setSelectedSound(new Audio(`./sounds/${e.target.value}.mp3`));
-		selectedSound.pause();
+		setSelectedSound(e.target.value);
+		setAlarmSound(new Audio(`./sounds/${e.target.value}.mp3`));
+		alarmSound.pause();
 		setTestSound(false);
 	};
 
 	const handleTestSound = () => {
-		selectedSound.currentTime = 0;
+		alarmSound.currentTime = 0;
 		setTestSound((prevState) => !prevState);
 	};
 
 	useEffect(() => {
 		if (testSound) {
-			selectedSound.play();
+			alarmSound.play();
 		} else {
-			selectedSound.currentTime = 0;
-			selectedSound.pause();
+			alarmSound.currentTime = 0;
+			alarmSound.pause();
 		}
-	}, [testSound, selectedSound]);
+	}, [testSound, alarmSound]);
 
 	useEffect(() => {
-		selectedSound.addEventListener('ended', () => setTestSound(false));
+		alarmSound.addEventListener('ended', () => setTestSound(false));
 
 		return () => {
-			selectedSound.removeEventListener('ended', () => setTestSound(false));
+			alarmSound.removeEventListener('ended', () => setTestSound(false));
 		};
-	}, [selectedSound]);
+	}, [alarmSound]);
 
 	const handleStartCountdown = () => {
-		setCountdownValue(timerValue * 60 * 1000);
-		setStartedAt(Date.now());
-		const newAlarmDate = structuredClone(currentDate);
-		newAlarmDate.setMinutes(currentDate.getMinutes() + timerValue);
-		setAlarmDate(newAlarmDate);
-		setAlarmSound(selectedSound);
-		setCountdownStarted(true);
+		const dateNow = Date.now();
+		setCountdownValue(alarmDate.getTime() - dateNow);
+		setStartedAt(dateNow);
+		setAlarmSound(new Audio(`./sounds/${selectedSound}.mp3`));
+	};
+
+	const handleResetValues = () => {
+		setAlarmDate(new Date(currentDate));
 	};
 
 	const handleStopAlarm = () => {
-		setStartedAt(0);
-		setCountdownStarted(false);
+		setStartedAt(null);
 		setPlayAlarmSound(false);
 		setProgressValue(0);
 	};
 
 	useEffect(() => {
-		if (countdownStarted) {
+		if (startedAt) {
 			const dateNow = Date.now();
-			if (dateNow >= startedAt + timerValue * 60 * 1000) {
+			if (dateNow >= alarmDate.getTime()) {
 				setPlayAlarmSound(true);
 			} else {
 				const timer = setInterval(() => {
-					const newCountdownValue =
-						startedAt + timerValue * 60 * 1000 - dateNow;
+					const newCountdownValue = alarmDate.getTime() - dateNow;
 					setCountdownValue(newCountdownValue);
 					const progress =
-						((timerValue - newCountdownValue / 60 / 1000) / timerValue) * 100;
+						(1 -
+							(alarmDate.getTime() - dateNow) /
+								(alarmDate.getTime() - startedAt)) *
+						100;
 					setProgressValue(progress);
 				}, 1000);
 				return () => {
@@ -209,7 +160,7 @@ function App() {
 				};
 			}
 		}
-	}, [countdownStarted, startedAt, timerValue, countdownValue]);
+	}, [startedAt, alarmDate, countdownValue]);
 
 	useEffect(() => {
 		if (playAlarmSound) {
@@ -225,7 +176,7 @@ function App() {
 		return x.toString().padStart(2, '0');
 	};
 
-	const convertMsToTime = (value: number) => {
+	const convertMsToCountdown = (value: number): string => {
 		const ms = value % 1000;
 		value = (value - ms) / 1000;
 		const secs = value % 60;
@@ -234,6 +185,19 @@ function App() {
 		const hrs = (value - mins) / 60;
 
 		return padNumber(hrs) + ':' + padNumber(mins) + ':' + padNumber(secs);
+	};
+
+	const formatDateYYMMDDHHMMSS = (
+		date: Date,
+		sliceExtraFromEnd: number = 0
+	): string => {
+		const formatted = new Date(
+			date.getTime() - date.getTimezoneOffset() * 60000
+		)
+			.toISOString()
+			.replace('T', ' ')
+			.slice(0, -(5 + sliceExtraFromEnd));
+		return formatted;
 	};
 
 	return (
@@ -278,251 +242,228 @@ function App() {
 										</span>
 									</div>
 									<div className={styles.current_time}>
-										<h2>
-											{new Date(
-												currentDate.getTime() -
-													currentDate.getTimezoneOffset() * 60000
-											)
-												.toISOString()
-												.replace('T', ' ')
-												.slice(0, -5)}
-										</h2>
+										<h2>{formatDateYYMMDDHHMMSS(currentDate)}</h2>
 									</div>
-									<div className={styles.container}>
-										<div className={styles.minutes_buttons}>
-											<div className={styles.decrement_buttons}>
-												{[1, 2, 3, 4, 5, 10, 30].map((num, i) => (
-													<button
-														key={i}
-														type='button'
-														onClick={() => handleTimerDecrement(num)}
+									<div className={styles.minutes_buttons}>
+										<div className={styles.decrement_buttons}>
+											{[1, 2, 3, 4, 5, 10].reverse().map((num, i) => (
+												<button
+													key={i}
+													type='button'
+													onClick={() => handleTimerDecrement(num)}
+													disabled={startedAt || playAlarmSound ? true : false}
+												>
+													- {num}
+												</button>
+											))}
+										</div>
+										<div className={styles.increment_buttons}>
+											{[1, 2, 3, 4, 5, 10].map((num, i) => (
+												<button
+													key={i}
+													type='button'
+													onClick={() => handleTimerIncrement(num)}
+													disabled={startedAt || playAlarmSound ? true : false}
+												>
+													+ {num}
+												</button>
+											))}
+										</div>
+									</div>
+									<div className={styles.main_controls}>
+										<div className={styles.date_select}>
+											<h4>Choose date and time for countdown</h4>
+											<div>
+												<div>
+													<label htmlFor='selectDate'>Date</label>
+													<input
+														type='date'
+														name='selectDate'
+														id='selectDate'
+														min={
+															new Date(
+																currentDate.getTime() -
+																	currentDate.getTimezoneOffset() * 60000
+															)
+																.toISOString()
+																.split('T')[0]
+														}
+														max={
+															new Date(
+																currentDate.getTime() +
+																	7 * 24 * 60 * 60 * 1000 -
+																	currentDate.getTimezoneOffset() * 60000
+															)
+																.toISOString()
+																.split('T')[0]
+														}
+														step={1}
+														value={
+															new Date(
+																alarmDate.getTime() -
+																	alarmDate.getTimezoneOffset() * 60000
+															)
+																.toISOString()
+																.split('T')[0]
+														}
+														onChange={handleDateSelect}
+														disabled={startedAt ? true : false}
+													/>
+												</div>
+												<div>
+													<label htmlFor='selectHour'>Hour</label>
+													<select
+														name='selectHour'
+														id='selectHour'
+														onChange={handleDateSelect}
+														value={padNumber(alarmDate.getHours())}
 														disabled={
 															startedAt || playAlarmSound ? true : false
 														}
 													>
-														- {num}
-													</button>
-												))}
-											</div>
-											<div className={styles.increment_buttons}>
-												{[1, 2, 3, 4, 5, 10, 30].map((num, i) => (
-													<button
-														key={i}
-														type='button'
-														onClick={() => handleTimerIncrement(num)}
+														{Array.from({ length: 24 }, (x, i) => i).map(
+															(num, i) => (
+																<option key={i} value={padNumber(num)}>
+																	{padNumber(num)}
+																</option>
+															)
+														)}
+													</select>
+												</div>
+												<div>
+													<label htmlFor='selectMinute'>Minute</label>
+													<select
+														name='selectMinute'
+														id='selectMinute'
+														onChange={handleDateSelect}
+														value={padNumber(alarmDate.getMinutes())}
 														disabled={
 															startedAt || playAlarmSound ? true : false
 														}
 													>
-														+ {num}
-													</button>
-												))}
+														{Array.from({ length: 60 }, (x, i) => i).map(
+															(num, i) => (
+																<option key={i} value={padNumber(num)}>
+																	{padNumber(num)}
+																</option>
+															)
+														)}
+													</select>
+												</div>
 											</div>
 										</div>
-										<div className={styles.main_controls}>
-											<div className={styles.minutes_input}>
-												<label htmlFor='timerValue'>
-													Set minutes for the countdown
-												</label>
-												<input
-													type='number'
-													name='timerValue'
-													id='timerValue'
-													min={0}
-													max={1440}
-													step={1}
-													value={timerValue}
-													onChange={handleChangeTimerByInput}
-													disabled={startedAt ? true : false}
-												/>
-											</div>
-											<div className={styles.time_select}>
-												<h4>Or set a time for the alarm</h4>
-												<select
-													name='selectHour'
-													id='selectHour'
-													onChange={handleHourChange}
-													value={padNumber(alarmDate.getHours())}
-													disabled={
-														countdownStarted || playAlarmSound ? true : false
-													}
-												>
-													{Array.from({ length: 24 }, (x, i) => i).map(
-														(num, i) => (
-															<option key={i} value={padNumber(num)}>
-																{padNumber(num)}
-															</option>
-														)
-													)}
-												</select>
-												<select
-													name='selectMinute'
-													id='selectMinute'
-													onChange={handleMinuteChange}
-													value={padNumber(alarmDate.getMinutes())}
-													disabled={
-														countdownStarted || playAlarmSound ? true : false
-													}
-												>
-													{Array.from({ length: 60 }, (x, i) => i).map(
-														(num, i) => (
-															<option key={i} value={padNumber(num)}>
-																{padNumber(num)}
-															</option>
-														)
-													)}
-												</select>
-											</div>
-											<div className={styles.sound_select}>
-												<h4>Pick alarm sound</h4>
-												<select
-													name='selectSound'
-													id='selectSound'
-													onChange={handleSoundChange}
-													disabled={countdownStarted ? true : false}
-												>
-													<option value='Ringtone'>Ringtone</option>
-													<option value='Rooster'>Rooster</option>
-													<option value='Bell'>Bell</option>
-													<option value='Siren'>Siren</option>
-												</select>
-												<span
-													className={`${styles.play_sound} ${
-														countdownStarted ? styles.disabled : ''
-													}`}
-													onClick={
-														countdownStarted ? undefined : handleTestSound
-													}
-												>
-													{testSound ? (
-														<svg
-															xmlns='http://www.w3.org/2000/svg'
-															width='36'
-															height='36'
-															viewBox='0 0 24 24'
-															fill='none'
-															stroke='currentColor'
+										<div className={styles.sound_select}>
+											<h4>Pick alarm sound</h4>
+											<select
+												name='selectSound'
+												id='selectSound'
+												onChange={handleSoundChange}
+												disabled={!!startedAt}
+											>
+												<option value='Ringtone'>Ringtone</option>
+												<option value='Rooster'>Rooster</option>
+												<option value='Bell'>Bell</option>
+												<option value='Siren'>Siren</option>
+											</select>
+											<span
+												className={`${styles.play_sound} ${
+													startedAt ? styles.disabled : ''
+												}`}
+												onClick={startedAt ? undefined : handleTestSound}
+											>
+												{testSound ? (
+													<svg
+														xmlns='http://www.w3.org/2000/svg'
+														width='36'
+														height='36'
+														viewBox='0 0 24 24'
+														fill='none'
+														stroke='currentColor'
+														strokeWidth='2'
+														strokeLinecap='round'
+														strokeLinejoin='round'
+													>
+														<circle cx='12' cy='12' r='10'></circle>
+														<rect
+															x='9'
+															y='9'
+															width='6'
+															height='6'
 															strokeWidth='2'
-															strokeLinecap='round'
-															strokeLinejoin='round'
-														>
-															<circle cx='12' cy='12' r='10'></circle>
-															<rect
-																x='9'
-																y='9'
-																width='6'
-																height='6'
-																strokeWidth='2'
-															></rect>
-														</svg>
-													) : (
-														<svg
-															xmlns='http://www.w3.org/2000/svg'
-															width='36'
-															height='36'
-															viewBox='0 0 24 24'
-															fill='none'
-															stroke='currentColor'
+														></rect>
+													</svg>
+												) : (
+													<svg
+														xmlns='http://www.w3.org/2000/svg'
+														width='36'
+														height='36'
+														viewBox='0 0 24 24'
+														fill='none'
+														stroke='currentColor'
+														strokeWidth='2'
+														strokeLinecap='round'
+														strokeLinejoin='round'
+													>
+														<circle cx='12' cy='12' r='10'></circle>
+														<polygon
+															points='10 8 16 12 10 16 10 8'
 															strokeWidth='2'
-															strokeLinecap='round'
-															strokeLinejoin='round'
-														>
-															<circle cx='12' cy='12' r='10'></circle>
-															<polygon
-																points='10 8 16 12 10 16 10 8'
-																strokeWidth='2'
-															></polygon>
-														</svg>
-													)}
-												</span>
-											</div>
-											<div className={styles.countdown_controls}>
-												<button
-													type='button'
-													onClick={() => handleStartCountdown()}
-													disabled={
-														countdownStarted || !timerValue || playAlarmSound
-															? true
-															: false
-													}
-												>
-													Start
-												</button>
-												<button
-													type='button'
-													onClick={handleResetValues}
-													disabled={
-														countdownStarted || playAlarmSound ? true : false
-													}
-												>
-													Reset
-												</button>
-												<button
-													type='button'
-													onClick={handleStopAlarm}
-													disabled={!countdownStarted ? true : false}
-													className={playAlarmSound ? styles.alarmOn : ''}
-												>
-													Stop
-												</button>
-											</div>
-											<div
-												className={styles.countdown}
-												style={
-													{
-														'--progress-bar': `${progressValue.toFixed(2)}%`,
-													} as React.CSSProperties
+														></polygon>
+													</svg>
+												)}
+											</span>
+										</div>
+										<div className={styles.countdown_controls}>
+											<button
+												type='button'
+												onClick={() => handleStartCountdown()}
+												disabled={
+													!!startedAt ||
+													alarmDate.getTime() <= currentDate.getTime() ||
+													playAlarmSound
 												}
 											>
-												<div>
-													<h3>Countdown:</h3>
-													<h2>
-														{countdownStarted
-															? convertMsToTime(countdownValue)
-															: convertMsToTime(timerValue * 60 * 1000)}
-													</h2>
-												</div>
-												<div>
-													<h3>Alarm will go off at:</h3>
-													<h2>
-														{countdownStarted
-															? new Date(
-																	alarmDate.getTime() -
-																		alarmDate.getTimezoneOffset() * 60000
-															  )
-																	.toISOString()
-																	.replace('T', ' ')
-																	.slice(0, -5)
-															: new Date(
-																	currentDate.getTime() +
-																		timerValue * 60 * 1000 -
-																		currentDate.getTimezoneOffset() * 60000
-															  )
-																	.toISOString()
-																	.replace('T', ' ')
-																	.slice(0, -5)}
-													</h2>
-												</div>
+												Start
+											</button>
+											<button
+												type='button'
+												onClick={handleResetValues}
+												disabled={!!startedAt || playAlarmSound}
+											>
+												Reset
+											</button>
+											<button
+												type='button'
+												onClick={handleStopAlarm}
+												disabled={!startedAt}
+												className={playAlarmSound ? styles.alarmOn : ''}
+											>
+												Stop
+											</button>
+										</div>
+										<div
+											className={styles.countdown}
+											style={
+												{
+													'--progress-bar': `${progressValue.toFixed(2)}%`,
+												} as React.CSSProperties
+											}
+										>
+											<div>
+												<h3>Alarm will go off at:</h3>
+												<h2>{formatDateYYMMDDHHMMSS(alarmDate, 3)}</h2>
+											</div>
+											<div>
+												<h3>Countdown:</h3>
+												<h2>
+													{startedAt && countdownValue
+														? convertMsToCountdown(countdownValue)
+														: '00:00:00'}
+												</h2>
 											</div>
 										</div>
 									</div>
 								</div>
-								<footer className={styles.footer}>
-									<a href='https://github.com/gizinski-jacek/alarm-app'>
-										Gizinski Jacek
-										<svg
-											viewBox='0 0 16 16'
-											height='18px'
-											width='18px'
-											xmlns='http://www.w3.org/2000/svg'
-										>
-											<path
-												fillRule='evenodd'
-												d='M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z'
-											></path>
-										</svg>
-									</a>
-								</footer>
 							</div>
 						}
 					></Route>
