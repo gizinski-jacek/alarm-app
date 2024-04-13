@@ -6,12 +6,14 @@
 	--primary: rgb(225, 225, 225);
 	--secondary: rgb(25, 25, 25);
 	--secondary-a10: rgba(25, 25, 25, 0.1);
+	--warning: rgba(255, 150, 0);
 }
 
 [data-theme-mode='dark'] {
 	--primary: rgb(25, 25, 25);
 	--secondary: rgb(225, 225, 225);
 	--secondary-a10: rgba(225, 225, 225, 0.1);
+	--warning: rgba(255, 150, 0);
 }
 
 .app {
@@ -21,11 +23,15 @@
 	background-color: var(--primary);
 	min-width: 500px;
 	transition: 0.75s ease;
+	position: relative;
 
 	.main {
 		flex: 1;
-		display: inline-block;
-		margin: 0 auto;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+		margin: 1rem auto;
 	}
 
 	h2,
@@ -34,24 +40,16 @@
 		text-align: center;
 		color: var(--secondary);
 		transition: 0.75s ease;
-	}
-
-	h2,
-	h3 {
-		margin: 4px;
-	}
-
-	h4 {
-		margin-top: 8px;
+		margin: 0.25rem;
 	}
 
 	button {
 		font-weight: 600;
 		font-size: 1rem;
 		color: var(--secondary);
-		border: 2px solid var(--secondary);
+		border: 0.125rem solid var(--secondary);
 		background-color: var(--primary);
-		border-radius: 4px;
+		border-radius: 0.25rem;
 		text-align: center;
 		white-space: nowrap;
 		cursor: pointer;
@@ -61,10 +59,15 @@
 			opacity: 0.5;
 			cursor: initial;
 		}
+
+		&:hover {
+			filter: brightness(150%);
+			transition: 0.25s;
+		}
 	}
 
 	.theme_toggle {
-		padding: 8px;
+		padding: 0.5rem;
 		position: absolute;
 		top: 0;
 		left: 0;
@@ -104,15 +107,42 @@
 		}
 	}
 
+	.notification {
+		width: 360px;
+		overflow: hidden;
+		padding: 0.5rem;
+		color: var(--secondary);
+		border: 0.25rem solid var(--warning);
+		border-radius: 0.5rem;
+		transition: 0.75s ease;
+
+		p {
+			margin: 0;
+			text-align: justify;
+		}
+
+		span {
+			font-weight: 600;
+			text-decoration: underline;
+			margin-right: 1.25rem;
+		}
+
+		> div {
+			margin-top: 0.5rem;
+			display: flex;
+			justify-content: space-between;
+			z-index: 50;
+		}
+	}
+
 	.current_time {
-		padding: 8px;
-		margin: 8px auto;
+		padding: 0.5rem;
 		width: -webkit-min-content;
 		width: -moz-min-content;
 		width: min-content;
 		color: var(--secondary);
-		border: 4px solid var(--secondary);
-		border-radius: 16px;
+		border: 0.25rem solid var(--secondary);
+		border-radius: 1rem;
 		transition: 0.75s ease;
 
 		@media only screen and (min-width: 600px) {
@@ -131,25 +161,17 @@
 			flex-direction: row;
 			justify-content: space-between;
 		}
-
-		.decrement_buttons {
-			direction: rtl;
-
-			button {
-				direction: ltr;
-			}
-		}
 	}
 
 	.decrement_buttons,
 	.increment_buttons {
 		text-align: center;
-		margin: 0 12px;
+		margin: 0 1rem;
 
 		button {
-			padding: 8px;
-			margin: 8px;
-			min-width: 52px;
+			padding: 0.5rem;
+			margin: 0.5rem;
+			min-width: 3.25rem;
 		}
 	}
 
@@ -158,24 +180,46 @@
 		flex-direction: column;
 		justify-content: space-between;
 		align-items: center;
-		margin: 0 auto;
+		gap: 1rem;
 	}
 
-	.minutes_input {
-		text-align: center;
+	.timer_input {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+
+		> div {
+			display: flex;
+			align-items: center;
+			text-align: center;
+		}
+
+		input {
+			width: 4rem;
+		}
 	}
 
-	.time_select,
+	.date_select {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+
+		> div {
+			display: flex;
+			align-items: center;
+			text-align: center;
+		}
+	}
+
 	.sound_select {
 		text-align: center;
 	}
 
 	label {
-		display: flex;
-		flex-direction: row;
-		align-items: flex-start;
-		margin-top: 8px;
-		font-size: 1.25rem;
+		display: block;
+		font-size: 1rem;
 		font-weight: 600;
 		color: var(--secondary);
 		transition: 0.75s ease;
@@ -185,13 +229,14 @@
 	select {
 		font-size: 1rem;
 		font-weight: 600;
-		padding: 4px;
-		margin: 4px;
+		padding: 0.25rem;
+		margin: 0.25rem;
+		min-height: 2.25rem;
 		text-align: center;
 		color: var(--secondary);
 		background-color: var(--primary);
-		border: 2px solid var(--secondary);
-		border-radius: 4px;
+		border: 0.125rem solid var(--secondary);
+		border-radius: 0.25rem;
 		transition: all 0.75s ease, opacity 0s;
 
 		&:disabled {
@@ -200,19 +245,14 @@
 		}
 	}
 
-	input {
-		width: 64px;
-	}
-
 	select {
-		min-width: 64px;
-		max-height: 50px;
+		min-width: 4rem;
 		cursor: pointer;
 	}
 
 	.play_sound {
 		display: inline-block;
-		margin-left: 4px;
+		margin-left: 0.25rem;
 		vertical-align: middle;
 
 		svg {
@@ -232,15 +272,18 @@
 	}
 
 	.countdown_controls {
+		display: flex;
+		gap: 0.5rem;
+
 		button {
-			padding: 8px 4px;
-			margin: 16px;
-			width: 80px;
+			padding: 0.5rem 0.25rem;
+			margin: 0.5rem;
+			width: 5rem;
 		}
 
 		.alarmOn {
-			-webkit-animation: alarm 0.5s ease-in-out infinite alternate;
-			animation: alarm 0.5s ease-in-out infinite alternate;
+			-webkit-animation: alarm 0.1s ease-in-out infinite alternate;
+			animation: alarm 0.1s ease-in-out infinite alternate;
 		}
 
 		@-webkit-keyframes alarm {
@@ -269,12 +312,11 @@
 	}
 
 	.countdown {
-		margin: 8px;
 		width: -webkit-fit-content;
 		width: -moz-fit-content;
 		width: fit-content;
-		border-radius: 16px;
-		border: 4px solid var(--secondary);
+		border-radius: 1rem;
+		border: 0.25rem solid var(--secondary);
 		transition: all 0.75s ease;
 		position: relative;
 
@@ -284,7 +326,7 @@
 		}
 
 		div {
-			margin: 8px;
+			margin: 0.5rem;
 		}
 	}
 
@@ -297,33 +339,5 @@
 		background-color: var(--secondary-a10);
 		width: var(--progress-bar);
 		transition: background-color 1s ease, width 1s ease;
-	}
-
-	.footer {
-		width: 100%;
-		text-align: center;
-		background-color: var(--secondary);
-		transition: 0.75s ease;
-
-		a {
-			font-weight: 600;
-			color: var(--primary);
-			padding: 4px;
-			display: flex;
-			justify-content: flex-end;
-			align-items: center;
-			text-decoration: none;
-			transition: inherit;
-		}
-
-		svg {
-			margin: 0 8px;
-			box-sizing: content-box;
-			border-radius: 50%;
-			padding: 1px;
-			background-color: var(--secondary);
-			fill: var(--primary);
-			transition: inherit;
-		}
 	}
 }
