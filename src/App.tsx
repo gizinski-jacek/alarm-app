@@ -13,6 +13,11 @@ function App() {
 		defaultLight ? 'light' : 'dark'
 	);
 
+	const [savedAlarm, setSavedAlarm] = useLocalStorage<{
+		alarmDate: number;
+		alarmSound: string;
+	} | null>('savedAlarm', null);
+
 	const toggleTheme = () => {
 		const newTheme = theme === 'light' ? 'dark' : 'light';
 		setTheme(newTheme);
@@ -29,6 +34,48 @@ function App() {
 	);
 	const [playAlarmSound, setPlayAlarmSound] = useState(false);
 	const [progressValue, setProgressValue] = useState(0);
+	const [prevAlarmNotification, setPrevAlarmNotification] = useState(false);
+
+	useEffect(() => {
+		savedAlarm && setPrevAlarmNotification(true);
+	}, []);
+
+	useEffect(() => {
+		if (prevAlarmNotification) {
+			const timer = setInterval(() => {
+				if (
+					savedAlarm?.alarmDate &&
+					new Date(savedAlarm.alarmDate).getTime() + 30 <= Date.now()
+				) {
+					setSavedAlarm(null);
+					setPrevAlarmNotification(false);
+				}
+			}, 1000);
+
+			return () => {
+				clearInterval(timer);
+			};
+		}
+	}, [
+		prevAlarmNotification,
+		savedAlarm,
+		setPrevAlarmNotification,
+		setSavedAlarm,
+	]);
+
+	const handleLoadPreviousAlarm = () => {
+		if (!savedAlarm) return;
+		setAlarmDate(new Date(savedAlarm.alarmDate));
+		setStartedAt(Date.now());
+		setSelectedSound(savedAlarm.alarmSound);
+		setAlarmSound(new Audio(`./sounds/${savedAlarm.alarmSound}.mp3`));
+		setPrevAlarmNotification(false);
+	};
+
+	const handleClearPreviousAlarm = () => {
+		setSavedAlarm(null);
+		setPrevAlarmNotification(false);
+	};
 
 	useEffect(() => {
 		const timer = setInterval(() => {
@@ -127,16 +174,25 @@ function App() {
 		setCountdownValue(alarmDate.getTime() - dateNow);
 		setStartedAt(dateNow);
 		setAlarmSound(new Audio(`./sounds/${selectedSound}.mp3`));
+		setSavedAlarm({
+			alarmDate: alarmDate.getTime(),
+			alarmSound: selectedSound,
+		});
+		setPrevAlarmNotification(false);
 	};
 
 	const handleResetValues = () => {
 		setAlarmDate(new Date(currentDate));
+		setSavedAlarm(null);
+		setPrevAlarmNotification(false);
 	};
 
 	const handleStopAlarm = () => {
 		setStartedAt(null);
 		setPlayAlarmSound(false);
 		setProgressValue(0);
+		setSavedAlarm(null);
+		setPrevAlarmNotification(false);
 	};
 
 	useEffect(() => {
@@ -144,6 +200,8 @@ function App() {
 			const dateNow = Date.now();
 			if (dateNow >= alarmDate.getTime()) {
 				setPlayAlarmSound(true);
+				setSavedAlarm(null);
+				setPrevAlarmNotification(false);
 			} else {
 				const timer = setInterval(() => {
 					const newCountdownValue = alarmDate.getTime() - dateNow;
@@ -160,7 +218,7 @@ function App() {
 				};
 			}
 		}
-	}, [startedAt, alarmDate, countdownValue]);
+	}, [startedAt, alarmDate, countdownValue, setSavedAlarm]);
 
 	useEffect(() => {
 		if (playAlarmSound) {
@@ -241,6 +299,31 @@ function App() {
 											</svg>
 										</span>
 									</div>
+									{prevAlarmNotification && savedAlarm ? (
+										<div className={styles.notification}>
+											<p>
+												We found your previously saved alarm for{' '}
+												<span>
+													{formatDateYYMMDDHHMMSS(
+														new Date(savedAlarm.alarmDate)
+													)}
+													.
+												</span>
+												Do you want to use it?
+											</p>
+											<div>
+												<button type='button' onClick={handleLoadPreviousAlarm}>
+													Yes
+												</button>
+												<button
+													type='button'
+													onClick={handleClearPreviousAlarm}
+												>
+													No
+												</button>
+											</div>
+										</div>
+									) : null}
 									<div className={styles.current_time}>
 										<h2>{formatDateYYMMDDHHMMSS(currentDate)}</h2>
 									</div>
