@@ -341,3 +341,29 @@
 		transition: background-color 1s ease, width 1s ease;
 	}
 }
+
+.github {
+	position: absolute;
+	top: 0;
+	right: 0;
+	border-bottom-left-radius: 8px;
+	background-color: var(--secondary);
+	transition: 0.75s ease;
+
+	a {
+		display: block;
+		color: var(--primary);
+		padding: 2px;
+		transition: inherit;
+	}
+
+	svg {
+		display: block;
+		box-sizing: content-box;
+		border-radius: 50%;
+		padding: 1px;
+		background-color: var(--secondary);
+		fill: var(--primary);
+		transition: inherit;
+	}
+}
