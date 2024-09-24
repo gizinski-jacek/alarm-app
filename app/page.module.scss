@@ -1,22 +1,4 @@
-:root {
-	--progress-bar: 0%;
-}
-
-[data-theme-mode='light'] {
-	--primary: rgb(225, 225, 225);
-	--secondary: rgb(25, 25, 25);
-	--secondary-a10: rgba(25, 25, 25, 0.1);
-	--warning: rgba(255, 150, 0);
-}
-
-[data-theme-mode='dark'] {
-	--primary: rgb(25, 25, 25);
-	--secondary: rgb(225, 225, 225);
-	--secondary-a10: rgba(225, 225, 225, 0.1);
-	--warning: rgba(255, 150, 0);
-}
-
-.app {
+.page {
 	display: flex;
 	flex-direction: column;
 	min-height: 100vh;
@@ -132,6 +114,10 @@
 			display: flex;
 			justify-content: space-between;
 			z-index: 50;
+
+			button {
+				padding: 0.125rem;
+			}
 		}
 	}
 
@@ -213,8 +199,12 @@
 		}
 	}
 
-	.sound_select {
+	.alarm_select {
 		text-align: center;
+
+		audio {
+			display: none;
+		}
 	}
 
 	label {
@@ -250,7 +240,7 @@
 		cursor: pointer;
 	}
 
-	.play_sound {
+	.play_alarm {
 		display: inline-block;
 		margin-left: 0.25rem;
 		vertical-align: middle;
@@ -282,8 +272,8 @@
 		}
 
 		.alarmOn {
-			-webkit-animation: alarm 0.1s ease-in-out infinite alternate;
-			animation: alarm 0.1s ease-in-out infinite alternate;
+			-webkit-animation: alarm 0.5s ease-in-out infinite alternate;
+			animation: alarm 0.5s ease-in-out infinite alternate;
 		}
 
 		@-webkit-keyframes alarm {

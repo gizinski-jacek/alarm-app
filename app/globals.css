@@ -1,0 +1,59 @@
+[data-theme-mode='light'] {
+	--primary: rgb(225, 225, 225);
+	--secondary: rgb(25, 25, 25);
+	--secondary-a10: rgba(25, 25, 25, 0.1);
+	--warning: rgba(255, 150, 0);
+}
+
+[data-theme-mode='dark'] {
+	--primary: rgb(25, 25, 25);
+	--secondary: rgb(225, 225, 225);
+	--secondary-a10: rgba(225, 225, 225, 0.1);
+	--warning: rgba(255, 150, 0);
+}
+
+html,
+body {
+	max-width: 100vw;
+	overflow-x: hidden;
+}
+
+body {
+	color: var(--foreground);
+	background: var(--background);
+	font-family: Arial, Helvetica, sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+* {
+	box-sizing: border-box;
+	padding: 0;
+	margin: 0;
+}
+
+a {
+	color: inherit;
+	text-decoration: none;
+}
+
+h2 {
+	font-size: 2.5rem;
+	margin: 0;
+}
+
+h3 {
+	font-size: 1.75rem;
+	margin: 0;
+}
+
+h4 {
+	font-size: 1.25rem;
+	margin: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+	html {
+		color-scheme: dark;
+	}
+}
