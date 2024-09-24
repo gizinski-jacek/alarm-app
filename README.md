@@ -5,20 +5,20 @@ Simple online alarm clock app.
 ## Table of contents
 
 - [Alarm App](#alarm-app)
-	- [Table of contents](#table-of-contents)
+  - [Table of contents](#table-of-contents)
 - [Github \& Live](#github--live)
-	- [Getting Started](#getting-started)
-	- [Learn More](#learn-more)
-	- [Deploy on Vercel](#deploy-on-vercel)
-	- [Features](#features)
-	- [Status](#status)
-	- [Contact](#contact)
+  - [Getting Started](#getting-started)
+  - [Learn More](#learn-more)
+  - [Deploy on Vercel](#deploy-on-vercel)
+  - [Features](#features)
+  - [Status](#status)
+  - [Contact](#contact)
 
 # Github & Live
 
 Github repo can be found [here](https://github.com/gizinski-jacek/alarm-app).
 
-Live demo can be found on [Netlify](https://online-alarm-clock-35d8a.netlify.app).
+Live demo can be found on [Netlify](https://online-alarm-app.netlify.app/).
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
