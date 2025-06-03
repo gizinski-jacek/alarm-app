@@ -308,7 +308,7 @@ function Home() {
 						</svg>
 					</span>
 				</div>
-				<div className={styles.github}>
+				{/* <div className={styles.github}>
 					<a href='https://github.com/gizinski-jacek/alarm-app'>
 						<svg
 							viewBox='0 0 16 16'
@@ -322,7 +322,7 @@ function Home() {
 							></path>
 						</svg>
 					</a>
-				</div>
+				</div> */}
 				{prevAlarmNotification && savedAlarm ? (
 					<div className={styles.notification}>
 						<p>
